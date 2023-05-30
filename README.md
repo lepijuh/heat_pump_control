@@ -8,28 +8,35 @@ If prices for some reason cannot be update (for example www.sahkonhinta-api.fi i
 Program has an API that you can access on you local network with HTTP calls. Possible calls are:
 
 Setting the low or normal value of the heat pump's temperature:
+
 PUT http://{host_ip}:5000/api/control?temp=normal or (temp=low)
 
 
-Setting the time span when heating should be on (NORMAL).
+Setting the time span when heating should be on (NORMAL):
+
 PUT http://{host_ip}:5000/api/heattime?hours=8 (time between 0 and 23)
 
 
 Checking the servo positions:
+
 GET http://{host_ip}:5000/api/api/positions
 
 
 Setting the servo positions for LOW and NORMAL operation:
-PUT http://{host_ip}:5000/api/api/positions?position1=45 (or position2)
+
+UT http://{host_ip}:5000/api/api/positions?position1=45 (or position2)
 
 
 To test if the API is working:
+
 GET http://{host_ip}:5000/api/test
 
 
 To check the times that are set for the servo scheduled control:
+
 GET http://{host_ip}.199:5000/api/times
 
 
-To set the times for the servo scheduled control:
+If you want to override the set times for the servo scheduled control. Time1 for NORMAL operation:
+
 PUT http://{host_ip}:5000/api/update_times?time1=21:00&time2=05:00
