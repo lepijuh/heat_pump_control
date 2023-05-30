@@ -9,18 +9,19 @@ import re
 
 # API calls:
 # PUT http://{host_ip}:5000/api/control?temp=normal or (temp=low)
+# PUT http://{host_ip}:5000/api/heattime?hours=8 (time between 0 and 23)
 # GET http://{host_ip}:5000/api/api/positions
 # PUT http://{host_ip}:5000/api/api/positions?position1=45 (or position2)
 # GET http://{host_ip}:5000/api/test
 # GET http://{host_ip}:5000/api/times
-# PUT http://{host_ip}:5000/api/update_times?time1=21:00&time2=05:00
 
 
 # Set the time zone to Finnish time (Eastern European Time) for datetime
 finnish_tz = pytz.timezone('Europe/Helsinki')
 
-time1='22:00'
-time2='06:00'
+time1 ='22:00'
+time2 ='06:00'
+hours = 8
 servo_position1= 135
 servo_position2= 45
 app = Flask(__name__)
@@ -74,8 +75,39 @@ def is_time_valid(time):
     else:
         return False
 
+# Updates time1 and time2 with start and stop time of hours with lowest average electricity price in the given time span between today 19:00 and tomorrow 18:00.
+import datetime
+import requests
 
+def start_stop_times(hours):
+    global time1
+    global time2 
+    hours += 1
+    # Calculate the current and next day
+    current_date = datetime.date.today()
+    next_date = current_date + datetime.timedelta(days=1)
+    # Create the time range string
+    time_range = f"{current_date.isoformat()}T19:00_{next_date.isoformat()}T18:00"
+    url = 'https://www.sahkohinta-api.fi/api/v1/halpa'
+    params = {
+        'tunnit': hours,
+        'tulos': 'sarja',
+        'aikaraja': time_range
+    }
+    response = requests.get(url, params=params)
+    data = response.json()
+    # Extract the timestamps and convert them to datetime objects
+    timestamps = [datetime.datetime.fromisoformat(entry['aikaleima_suomi']) for entry in data]
+    # Find the earliest and latest timestamps
+    start_time = min(timestamps).strftime("%H:%M")
+    stop_time = max(timestamps).strftime("%H:%M")
+    # Update time1 and time2 with new values
+    time1 = start_time
+    time2 = stop_time
+
+    
 # Schedule tasks
+schedule.every().day.at('18:30', 'Europe/Helsinki').do(start_stop_times).tag('start_stop_times')
 schedule.every().day.at(time1, 'Europe/Helsinki').do(set_to_normal).tag('set_to_normal')
 schedule.every().day.at(time2, 'Europe/Helsinki').do(set_to_low).tag('set_to_low')
 
@@ -97,6 +129,19 @@ def control():
     except Exception as e:
         return jsonify({'error': str(e)}), 400  # Return error message with 400 Bad Request status
 
+@app.route('/api/heattime', methods=['PUT'])
+def heating_hours():
+    global hours
+    try:   
+        new_hours = request.args.get('hours') 
+        if 'hours' in request.args:    
+            if int(hours) >= 0 and int(hours) <= 23:
+                hours = new_hours
+            return 'Heating time set to ' + str(hours) + ' hours.'
+        return 'Invalid request. Heating time can be between 0 and 23 hours', 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400  # Return error message with 400 Bad Request status
+    
 
 # API endpoint for checking the NORMAL and LOW servo positions
 @app.route('/api/positions', methods=['GET'])
@@ -151,36 +196,6 @@ def check_time():
     global time2
     try:
         return 'Times set for changing the temperature are: to NORMAL@' + time1 + ', to LOW@' + time2
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400  # Return error message with 400 Bad Request status
-
-
-# API endpoint to update task times
-@app.route('/api/update_times', methods=['PUT'])
-def update_tasks():
-    global time1
-    global time2
-    new_time1 = time1
-    new_time2 = time2
-    try:
-        if 'time1' in request.args and is_time_valid(request.args['time1']) is False or 'time2' in request.args and is_time_valid(request.args['time2']) is False:
-            return 'Invalid request. Time should be between 00:00 and 23:59 in the format of HH:MM', 400
-        if 'time1' in request.args and is_time_valid(request.args['time1']):
-            new_time1 = request.args['time1']
-            schedule.clear('set_to_normal')
-            schedule.every().day.at(new_time1, 'Europe/Helsinki').do(set_to_normal).tag('set_to_normal')
-            current_time = datetime.datetime.now(finnish_tz).time()
-            print(current_time, 'Time1 changed to', new_time1)
-        if 'time2' in request.args and is_time_valid(request.args['time2']):
-            new_time2 = request.args['time2']
-            schedule.clear('set_to_low')
-            schedule.every().day.at(new_time2, 'Europe/Helsinki').do(set_to_low).tag('set_to_low')
-            current_time = datetime.datetime.now(finnish_tz).time()
-            print(current_time, 'Time2 changed to', new_time2)
-        # Update global variables only if a time is provided
-        time1 = new_time1
-        time2 = new_time2
-        return 'Time(s) updated successfully. Times set for changing the temperature are: to NORMAL@' + time1 + ', to LOW@' + time2
     except Exception as e:
         return jsonify({'error': str(e)}), 400  # Return error message with 400 Bad Request status
 
