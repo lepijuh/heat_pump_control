@@ -22,9 +22,9 @@ import requests
 # Set the time zone to Finnish time (Eastern European Time) for datetime
 finnish_tz = pytz.timezone('Europe/Helsinki')
 
-time1 ='22:00'
-time2 ='06:00'
-price_check_time = '21:30'
+time1 = '22:00'
+time2 = '06:00'
+price_check_time = '18:30'
 hours = 8
 servo_position1= 135
 servo_position2= 45
