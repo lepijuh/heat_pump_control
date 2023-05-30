@@ -19,8 +19,6 @@ import re
 # Set the time zone to Finnish time (Eastern European Time) for datetime
 finnish_tz = pytz.timezone('Europe/Helsinki')
 
-
-# Define global variables for time handling and servo positions
 time1='22:00'
 time2='06:00'
 servo_position1= 135
@@ -77,7 +75,7 @@ def is_time_valid(time):
         return False
 
 
-# Schedule the tasks
+# Schedule tasks
 schedule.every().day.at(time1, 'Europe/Helsinki').do(set_to_normal).tag('set_to_normal')
 schedule.every().day.at(time2, 'Europe/Helsinki').do(set_to_low).tag('set_to_low')
 
