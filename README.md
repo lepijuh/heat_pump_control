@@ -1,7 +1,7 @@
 # Heat pump control
-Program to control a servo which turns potentiometer of ground-source heat pump's temperature offset. It is aimed for optimizing electrical bill so the heat pump is run mainly at night when the price of exchange electricity is low.
+A program to control a servo which turns potentiometer of ground-source heat pump's temperature offset. It is aimed for optimizing electricity bill so the heat pump is run mainly at night when the price of exchange electricity is low.
 At this point it is only time controlled, so the pump will turn to low temperature setting during the day and to normal temperature setting at night when the electricity is cheaper.
-Future implementation will include the time's to be set based on the price of electricity in the exchange.
+Future implementation will include time's to be set based on the price of electricity in the exchange.
 
 It has an API that you can access on you local network with HTTP calls. Possible calls are:
 
