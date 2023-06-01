@@ -34,7 +34,7 @@ GET http://{host_ip}:5000/api/test
 
 To check the times that are set for the servo scheduled control:
 
-GET http://{host_ip}.199:5000/api/times
+GET http://{host_ip}:5000/api/times
 
 
 If you want to override the set times for the servo scheduled control. Time1 for NORMAL operation and time2 for LOW operation:
