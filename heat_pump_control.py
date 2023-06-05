@@ -90,7 +90,7 @@ def start_stop_times(hours):
     current_date = datetime.date.today()
     next_date = current_date + datetime.timedelta(days=1)
     # Create the time range string
-    time_range = f"{current_date.isoformat()}T19:00_{next_date.isoformat()}T18:00"
+    time_range = f"{current_date.isoformat()}T19:00_{next_date.isoformat()}T07:00"
     url = 'https://www.sahkohinta-api.fi/api/v1/halpa'
     params = {
         'tunnit': hours,
